@@ -69,9 +69,22 @@
 
 # לאחר תיקונים של AI
 from pynput import keyboard
+import json
 import time
 import threading
 import os
+import ctypes
+import locale
+
+def get_current_languge():
+    layout = ctypes.windll.user32.GetKeyboardLayout(0)
+    lang_id = layout & 0xFFFF
+    try:
+        return locale.windows_locale[lang_id]
+    except KeyError:
+        return f'Unknown(0x{lang_id:X})'
+
+
 
 stop_event = threading.Event()
 
@@ -119,12 +132,11 @@ def record():
     hotkey = keyboard.GlobalHotKeys({"<shift>+<ctrl>+t": stop_logging})
     hotkey.start()
 
+
     with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
         listener.join()
 
-
 def main():
-    print("p")
     try:
         threading.Thread(target=record, daemon=True).start()
         threading.Thread(target=show, daemon=True).start()
@@ -132,8 +144,6 @@ def main():
             time.sleep(1)
     except KeyboardInterrupt:
         print("the program stop")
-
-
 
 if __name__ == "__main__":
     main()
